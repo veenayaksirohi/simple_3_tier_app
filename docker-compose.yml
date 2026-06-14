@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    container_name: todo-postgres
+    environment:
+      POSTGRES_DB: tododb
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    container_name: todo-backend
+    environment:
+      DATABASE_HOST: db
+      DATABASE_NAME: tododb
+      DATABASE_USER: todo_user
+      DATABASE_PASSWORD: todo_pass
+      DATABASE_PORT: 5432
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build: ./frontend
+    container_name: todo-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres_data:

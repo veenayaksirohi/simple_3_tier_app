@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple 3-Tier Todo App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 18px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #f8fafc;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .small {
+      color: #666;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .status {
+      margin-bottom: 16px;
+      padding: 10px;
+      background: #eef2ff;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simple 3-Tier Todo App</h1>
+    <div class="status" id="status">Checking backend...</div>
+
+    <div class="row">
+      <input id="todoInput" type="text" placeholder="Enter a todo item" />
+      <button onclick="addTodo()">Add Todo</button>
+    </div>
+
+    <button onclick="loadTodos()">Refresh Todos</button>
+
+    <h2>Todo List</h2>
+    <ul id="todoList"></ul>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:5000";
+
+    async function checkHealth() {
+      try {
+        const res = await fetch(`${API_URL}/health`);
+        const data = await res.json();
+        document.getElementById("status").innerText = data.message;
+      } catch (e) {
+        document.getElementById("status").innerText = "Backend is not reachable";
+      }
+    }
+
+    async function loadTodos() {
+      const list = document.getElementById("todoList");
+      list.innerHTML = "<li>Loading...</li>";
+
+      try {
+        const res = await fetch(`${API_URL}/todos`);
+        const todos = await res.json();
+
+        if (todos.length === 0) {
+          list.innerHTML = "<li>No todos found</li>";
+          return;
+        }
+
+        list.innerHTML = todos.map(todo => `
+          <li>
+            <strong>${todo.title}</strong>
+            <div class="small">ID: ${todo.id} | Created: ${todo.created_at || "N/A"}</div>
+          </li>
+        `).join("");
+      } catch (e) {
+        list.innerHTML = "<li>Error loading todos</li>";
+      }
+    }
+
+    async function addTodo() {
+      const input = document.getElementById("todoInput");
+      const title = input.value.trim();
+
+      if (!title) {
+        alert("Please enter a todo item");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/todos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.error || "Error adding todo");
+          return;
+        }
+
+        input.value = "";
+        await loadTodos();
+      } catch (e) {
+        alert("Could not connect to backend");
+      }
+    }
+
+    checkHealth();
+    loadTodos();
+  </script>
+</body>
+</html>
