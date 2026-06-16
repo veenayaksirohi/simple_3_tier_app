@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
+  name: frontend-deployment
   labels:
-    app: project-backend
+    app: project-frontend
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: project-backend
+      app: project-frontend
   template:
     metadata:
       labels:
-        app: project-backend
+        app: project-frontend
     spec:
       containers:
-        - name: project-backend
-          image: veenayak/devsecops_cdacproject-backend:latest
+        - name: project-frontend
+          image: veenayak/devsecops_cdacproject-frontend:latest
           ports:
-            - containerPort: 5000
+            - containerPort: 5173
           imagePullPolicy: Always
