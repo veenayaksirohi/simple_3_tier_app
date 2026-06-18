@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-init
+  namespace: web-app
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS todos (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,3 +40,12 @@ spec:
               value: "todo_user"
             - name: POSTGRES_PASSWORD
               value: "todo_pass"
+          volumeMounts:
+            - name: database-init
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+              readOnly: true
+      volumes:
+        - name: database-init
+          configMap:
+            name: database-init
