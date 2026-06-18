@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: simple_3_tier_app-backend:latest
-          imagePullPolicy: Never
+          image: veenayak/simple_3_tier_app-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           env:
